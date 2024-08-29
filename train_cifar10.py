@@ -50,15 +50,6 @@ parser.add_argument('--convkernel', default='8', type=int, help="parameter for c
 
 args = parser.parse_args()
 
-# take in args
-usewandb = ~args.nowandb
-if usewandb:
-    import wandb
-    watermark = "{}_lr{}".format(args.net, args.lr)
-    wandb.init(project="cifar10-challange",
-            name=watermark)
-    wandb.config.update(args)
-
 bs = int(args.bs)
 imsize = int(args.size)
 
@@ -319,9 +310,6 @@ def test(epoch):
 list_loss = []
 list_acc = []
 
-if usewandb:
-    wandb.watch(net)
-    
 net.cuda()
 for epoch in range(start_epoch, args.n_epochs):
     start = time.time()
@@ -332,11 +320,6 @@ for epoch in range(start_epoch, args.n_epochs):
     
     list_loss.append(val_loss)
     list_acc.append(acc)
-    
-    # Log training..
-    if usewandb:
-        wandb.log({'epoch': epoch, 'train_loss': trainloss, 'val_loss': val_loss, "val_acc": acc, "lr": optimizer.param_groups[0]["lr"],
-        "epoch_time": time.time()-start})
 
     # Write out csv..
     with open(f'log/log_{args.net}_patch{args.patch}.csv', 'w') as f:
@@ -345,7 +328,4 @@ for epoch in range(start_epoch, args.n_epochs):
         writer.writerow(list_acc) 
     print(list_loss)
 
-# writeout wandb
-if usewandb:
-    wandb.save("wandb_{}.h5".format(args.net))
     
