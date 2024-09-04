@@ -13,3 +13,5 @@ from models.resnet import *
 #from preact_resnet import *
 #from mobilenet import *
 #from mobilenetv2 import *
+from models.cifar10 import *
+from models.resnetDropout import *

@@ -47,6 +47,7 @@ parser.add_argument('--n_epochs', type=int, default='200')
 parser.add_argument('--patch', default='4', type=int, help="patch for ViT")
 parser.add_argument('--dimhead', default="512", type=int)
 parser.add_argument('--convkernel', default='8', type=int, help="parameter for convmixer")
+parser.add_argument('--dropout', default='.1', type=float, help="parameter for dropout")
 
 args = parser.parse_args()
 
@@ -108,6 +109,10 @@ elif args.net=='res50':
     net = ResNet50()
 elif args.net=='res101':
     net = ResNet101()
+elif args.net=='cifar10':
+    net = CIFAR10CNN(dropout_value=args.dropout)
+elif args.net=='resnetDropout':
+    net = ResNet18CIFAR10(dropout_value=args.dropout)
 elif args.net=="convmixer":
     # from paper, accuracy >96%. you can tune the depth and dim to scale accuracy and speed.
     net = ConvMixer(256, 16, kernel_size=args.convkernel, patch_size=1, n_classes=10)
