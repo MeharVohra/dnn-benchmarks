@@ -306,9 +306,10 @@ def test(epoch):
         best_acc = acc
     
     os.makedirs("log", exist_ok=True)
+    os.makedirs("log/" + str(args.dropout), exist_ok=True)
     content = time.ctime() + ' ' + f'Epoch {epoch}, lr: {optimizer.param_groups[0]["lr"]:.7f}, val loss: {test_loss:.5f}, acc: {(acc):.5f}'
     print(content)
-    with open(f'log/log_{args.net}_patch{args.patch}.txt', 'a') as appender:
+    with open(f'log/' + str(args.dropout) + '/log_' + args.net + '_patch' + str(args.patch) + '.txt', 'a') as appender:
         appender.write(content + "\n")
     return test_loss, acc
 
