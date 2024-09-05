@@ -302,7 +302,7 @@ def test(epoch):
               "scaler": scaler.state_dict()}
         if not os.path.isdir('checkpoint'):
             os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/'+args.net+'-{}-ckpt.t7'.format(args.patch))
+        torch.save(state, './checkpoint/'+args.net+'-{}-drop-{}-ckpt.t7'.format(args.patch, args.dropout))
         best_acc = acc
     
     os.makedirs("log", exist_ok=True)
