@@ -15,3 +15,4 @@ from models.resnet import *
 #from mobilenetv2 import *
 from models.cifar10 import *
 from models.resnetDropout import *
+from models.vgg_11 import *

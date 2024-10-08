@@ -113,6 +113,8 @@ elif args.net=='cifar10':
     net = CIFAR10CNN(dropout_value=args.dropout)
 elif args.net=='resnetDropout':
     net = ResNet18CIFAR10(dropout_value=args.dropout)
+elif args.net=='vgg11':
+    net = VGG11CIFAR10(dropout_value=args.dropout)
 elif args.net=="convmixer":
     # from paper, accuracy >96%. you can tune the depth and dim to scale accuracy and speed.
     net = ConvMixer(256, 16, kernel_size=args.convkernel, patch_size=1, n_classes=10)
