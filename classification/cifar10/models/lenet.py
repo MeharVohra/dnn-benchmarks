@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class CIFAR10CNN(nn.Module):
+class LeNet(nn.Module):
     def __init__(self, dropout_value=0.5):
-        super(CIFAR10CNN, self).__init__()
+        super(LeNet, self).__init__()
         self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from models.vgg import *
+from models.alexnet import *
 #from dpn import *
 #from lenet import *
 #from senet import *
@@ -13,6 +14,5 @@ from models.resnet import *
 #from preact_resnet import *
 #from mobilenet import *
 #from mobilenetv2 import *
-from models.cifar10 import *
-from models.resnetDropout import *
+from models.lenet import *
 from models.vgg_11 import *
