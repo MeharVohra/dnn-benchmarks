@@ -251,6 +251,7 @@ if __name__ == '__main__':
     #### Load Net
     print('==> Resuming from savefile..')
     net.load_state_dict(torch.load(os.path.join(savedir, f'fp32_{args.net}.pth')))
+    net.to(device)
 
     #### Testing
     # Criterion

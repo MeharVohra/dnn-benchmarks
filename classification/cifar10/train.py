@@ -360,5 +360,6 @@ if __name__ == '__main__':
         # print(f'{train_loss}, {val_loss}, {acc}')
 
     if args.nosave or (acc < best_acc):
+        net.to('cpu') # Use always CPU device for storage
         print(f'saving results net...')
         torch.save(net.state_dict(), os.path.join(savedir, f'fp32_{args.net}.pth'))
