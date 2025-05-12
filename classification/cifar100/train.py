@@ -105,7 +105,7 @@ def train(net, epoch, workdir, netname, patch, best_acc):
 
     # .txt Log
     if epoch == 0:
-        with open(os.path.join(f'log_{args.net}_patch{args.patch}.txt'), 'w') as f:
+        with open(os.path.join(logdir, f'log_{args.net}_patch{args.patch}.txt'), 'w') as f:
             pass
 
     content = time.ctime() + f', Epoch: {epoch}, lr: {optimizer.param_groups[0]['lr']:.7f}, val loss: {val_loss:.5f}, acc: {(acc):.5f}'
@@ -362,4 +362,5 @@ if __name__ == '__main__':
     if args.nosave or (acc < best_acc):
         net.to('cpu') # Use always CPU device for storage
         print(f'saving results net...')
+        os.makedirs(savedir, exist_ok=True)
         torch.save(net.state_dict(), os.path.join(savedir, f'fp32_{args.net}_cifar100.pth'))

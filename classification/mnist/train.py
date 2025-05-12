@@ -71,6 +71,7 @@ if __name__ == '__main__':
         raise ValueError('unsupported model')
 
     model.to(device)
+    os.makedirs(traindir, exist_ok=True)
     savefile = os.path.join(traindir, f'fp32_{args.model}_mnist.pth')
     print(f'-I({__file__}): Model loaded')
 
