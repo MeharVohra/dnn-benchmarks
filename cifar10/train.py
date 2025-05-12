@@ -6,29 +6,26 @@ written by @kentaroy47, @arutema47
 
 '''
 
-from __future__ import print_function
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.backends.cudnn as cudnn
-import numpy as np
 
 import torchvision
 import torchvision.transforms as transforms
 
 import os
 import argparse
-import pandas as pd
 import csv
 import time
 
 from models import *
-from utils import progress_bar
-from randomaug import RandAugment
+from utils import RandAugment, progress_bar
 from models.vit import ViT
 from models.convmixer import ConvMixer
+
+datasets=['cifar10', 'cifar100']
 
 # parsers
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
@@ -39,7 +36,10 @@ parser.add_argument('--noaug', action='store_false', help='disable use randomaug
 parser.add_argument('--noamp', action='store_true', help='disable mixed precision training. for older pytorch versions')
 parser.add_argument('--nowandb', action='store_true', help='disable wandb')
 parser.add_argument('--mixup', action='store_true', help='add mixup augumentations')
+parser.add_argument('--notrain', action='store_true', help='skips training')
 parser.add_argument('--net', default='vit')
+parser.add_argument('--dataset', type=str, choices=datasets, default='cifar10', help='Train Dataset')
+parser.add_argument('--loadnet', type=str, help='load net')
 parser.add_argument('--dp', action='store_true', help='use data parallel')
 parser.add_argument('--bs', default='512')
 parser.add_argument('--size', default="32")
@@ -84,15 +84,23 @@ transform_test = transforms.Compose([
 
 # Add RandAugment with N, M(hyperparameter)
 if aug:  
-    N = 2; M = 14;
+    N = 2
+    M = 14
     transform_train.transforms.insert(0, RandAugment(N, M))
 
 # Prepare dataset
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=bs, shuffle=True, num_workers=8)
+if args.dataset == 'cifar10':
+    trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=bs, shuffle=True, num_workers=8)
 
-testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_test)
-testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False, num_workers=8)
+    testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_test)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False, num_workers=8)
+else:
+    trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform_train)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=bs, shuffle=True, num_workers=8)
+
+    testset = torchvision.datasets.CIFAR100(root='./data', train=False, download=True, transform=transform_test)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False, num_workers=8)
 
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
@@ -101,6 +109,8 @@ print('==> Building model..')
 # net = VGG('VGG19')
 if args.net=='res18':
     net = ResNet18()
+elif args.net=='alexnet':
+    net = AlexNet()
 elif args.net=='vgg':
     net = VGG('VGG19')
 elif args.net=='res34':
@@ -230,10 +240,11 @@ if args.resume:
     # Load checkpoint.
     print('==> Resuming from checkpoint..')
     assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
-    checkpoint = torch.load('./checkpoint/{}-ckpt.t7'.format(args.net))
-    net.load_state_dict(checkpoint['net'])
-    best_acc = checkpoint['acc']
-    start_epoch = checkpoint['epoch']
+    # checkpoint = torch.load('./checkpoint/{}-ckpt.t7'.format(args.net))
+    # net.load_state_dict(checkpoint['net'])
+    # best_acc = checkpoint['acc']
+    # start_epoch = checkpoint['epoch']
+    net.load_state_dict(torch.load(args.loadnet))
 
 # Loss is CE
 criterion = nn.CrossEntropyLoss()
@@ -275,7 +286,7 @@ def train(epoch):
     return train_loss/(batch_idx+1)
 
 ##### Validation
-def test(epoch):
+def test(epoch, save=True):
     global best_acc
     net.eval()
     test_loss = 0
@@ -295,45 +306,50 @@ def test(epoch):
             progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                 % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
     
-    # Save checkpoint.
-    acc = 100.*correct/total
-    if acc > best_acc:
-        print('Saving..')
-        state = {"model": net.state_dict(),
-              "optimizer": optimizer.state_dict(),
-              "scaler": scaler.state_dict()}
-        if not os.path.isdir('checkpoint'):
-            os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/'+args.net+'-{}-drop-{}-ckpt.t7'.format(args.patch, args.dropout))
-        best_acc = acc
-    
-    os.makedirs("log", exist_ok=True)
-    os.makedirs("log/" + str(args.dropout), exist_ok=True)
-    content = time.ctime() + ' ' + f'Epoch {epoch}, lr: {optimizer.param_groups[0]["lr"]:.7f}, val loss: {test_loss:.5f}, acc: {(acc):.5f}'
-    print(content)
-    with open(f'log/' + str(args.dropout) + '/log_' + args.net + '_patch' + str(args.patch) + '.txt', 'a') as appender:
-        appender.write(content + "\n")
+    if save:
+        # Save checkpoint.
+        acc = 100.*correct/total
+        if acc > best_acc:
+            print('Saving..')
+            state = {"model": net.state_dict(),
+                "optimizer": optimizer.state_dict(),
+                "scaler": scaler.state_dict()}
+            if not os.path.isdir('checkpoint'):
+                os.mkdir('checkpoint')
+            torch.save(net.state_dict(), './checkpoint/'+args.net+'-'+args.dataset+'-{}-drop-{}-ckpt.t7.pth'.format(args.patch, args.dropout))
+            best_acc = acc
+        
+        os.makedirs("log", exist_ok=True)
+        os.makedirs("log/" + str(args.dropout), exist_ok=True)
+        content = time.ctime() + ' ' + f'Epoch {epoch}, lr: {optimizer.param_groups[0]["lr"]:.7f}, val loss: {test_loss:.5f}, acc: {(acc):.5f}'
+        print(content)
+        with open(f'log/' + str(args.dropout) + '/log_' + args.net + '_patch' + str(args.patch) + '.txt', 'a') as appender:
+            appender.write(content + "\n")
+
     return test_loss, acc
 
 list_loss = []
 list_acc = []
 
-net.cuda()
-for epoch in range(start_epoch, args.n_epochs):
-    start = time.time()
-    trainloss = train(epoch)
-    val_loss, acc = test(epoch)
-    
-    scheduler.step(epoch-1) # step cosine scheduling
-    
-    list_loss.append(val_loss)
-    list_acc.append(acc)
+if not args.notrain:
+    net.cuda()
+    for epoch in range(start_epoch, args.n_epochs):
+        start = time.time()
+        trainloss = train(epoch)
+        val_loss, acc = test(epoch)
+        
+        scheduler.step(epoch-1) # step cosine scheduling
+        
+        list_loss.append(val_loss)
+        list_acc.append(acc)
 
-    # Write out csv..
-    with open(f'log/log_{args.net}_patch{args.patch}.csv', 'w') as f:
-        writer = csv.writer(f, lineterminator='\n')
-        writer.writerow(list_loss) 
-        writer.writerow(list_acc) 
-    print(list_loss)
-
-    
+        # Write out csv..
+        with open(f'log/log_{args.net}_patch{args.patch}.csv', 'w') as f:
+            writer = csv.writer(f, lineterminator='\n')
+            writer.writerow(list_loss) 
+            writer.writerow(list_acc) 
+        print(list_loss)
+else:
+    net.to(device)
+    loss, acc = test(0, False)
+    print(f'tested network, acc = {acc}, loss = {loss}')

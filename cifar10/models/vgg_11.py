@@ -1,8 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
-import torchvision
-import torchvision.transforms as transforms
 
 # Define the VGG-11 architecture
 class VGG11CIFAR10(nn.Module):
