@@ -18,7 +18,7 @@ traindir   = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 
 ###################################################
 
-def train(model, savefile, epochs, dataloader):
+def train(model, savefile, epochs, dataloader, save_all=False):
 
     ## Prepare Model for Training
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -38,7 +38,10 @@ def train(model, savefile, epochs, dataloader):
 
     ## Save Trained Network
     model = model.to('cpu')
-    torch.save(model.state_dict(), savefile)
+    if save_all:
+        torch.save(model, savefile)
+    else:
+        torch.save(model.state_dict(), savefile)
     print(f'-I({__file__}): Weights saved into {savefile}')
 
 ###################################################
