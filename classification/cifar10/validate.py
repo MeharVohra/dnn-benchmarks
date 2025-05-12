@@ -16,7 +16,6 @@ import argparse
 import time
 
 import models
-import models.simplevit
 from utils import progress_bar
 from dataset import getCIFAR10
 
@@ -31,37 +30,7 @@ savedir    = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 ## Train Routine
 
 # def train(epoch):
-def train(net, epoch, workdir, netname, patch, best_acc):
-    print('\nEpoch: %d' % epoch)
-
-    ## Train Step
-    net.train()
-    train_loss = 0
-    train_correct = 0
-    train_total = 0
-
-    for batch_idx, (inputs, targets) in enumerate(trainloader):
-
-        inputs, targets = inputs.to(device), targets.to(device)
-
-        # Train with amp
-        with torch.cuda.amp.autocast(enabled=use_amp):
-            outputs = net(inputs)
-            loss = criterion(outputs, targets)
-        scaler.scale(loss).backward()
-        scaler.step(optimizer)
-        scaler.update()
-        optimizer.zero_grad()
-
-        train_loss += loss.item()
-        _, predicted = outputs.max(1)
-        train_total += targets.size(0)
-        train_correct += predicted.eq(targets).sum().item()
-
-        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-            % (train_loss/(batch_idx+1), 100.*train_correct/train_total, train_correct, train_total))
-
-    train_loss /= (batch_idx+1)
+def test(net, testloader):
 
     ## Validation
     net.eval()
@@ -85,44 +54,7 @@ def train(net, epoch, workdir, netname, patch, best_acc):
     
     acc = 100.*val_correct/val_total
 
-    # Save checkpoint.
-    if acc > best_acc:
-        print('Saving checkpoint..')
-        state = {'model': net.state_dict(),
-            'acc': acc,
-            'epoch': epoch}
-
-        checkpointsdir = os.path.join(workdir, 'checkpoint')
-        if not os.path.isdir(checkpointsdir):
-            os.mkdir(checkpointsdir)
-        
-        torch.save(state, os.path.join(checkpointsdir, netname + f'-{patch}-ckpt.t7'))
-        best_acc = acc
-    
-    ## Write Logs
-    logdir = os.path.join(workdir, 'log')
-    os.makedirs(logdir, exist_ok=True)
-
-    # .txt Log
-    if epoch == 0:
-        with open(os.path.join(f'log_{args.net}_patch{args.patch}.txt'), 'w') as f:
-            pass
-
-    content = time.ctime() + f', Epoch: {epoch}, lr: {optimizer.param_groups[0]['lr']:.7f}, val loss: {val_loss:.5f}, acc: {(acc):.5f}'
-    print(content)
-
-    with open(os.path.join(logdir, 'log_' + args.net + '_patch' + str(patch) + '.txt'), 'a') as appender:
-        appender.write(content + '\n')
-
-    # .csv Log
-    if epoch == 0:
-        with open(os.path.join(logdir, f'log_{args.net}_patch{args.patch}.csv'), 'w') as f:
-            pass
-
-    with open(os.path.join(logdir, f'log_{args.net}_patch{args.patch}.csv'), 'a') as f:
-        print(f'{train_loss}, {val_loss}, {acc}', file=f)
-
-    return train_loss, val_loss, acc
+    return val_loss, acc
 
 #####################################################################################################################
 ## Networks
@@ -150,29 +82,20 @@ if __name__ == '__main__':
         'cait_small',
         'swin']
 
-    optimizers = [
-        'adam',
-        'sgd'
-    ]
-
     # Args Parser
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 
     parser.add_argument('--net',            choices=networks, required=True,    help='Network to train')
     parser.add_argument('--batchsize',      default=512)
-    parser.add_argument('--n_epochs',       type=int, default='200',            help='training epochs (400 for ViTs, 200 otherwise)')
-    parser.add_argument('--lr',             default=1e-3, type=float,           help='learning rate (recommended: 1e-4 for ViTs, 1e-3 otherwise)') # resnets.. 1e-3, Vit..1e-4
-    parser.add_argument('--opt',            default='adam', choices=optimizers)
-    parser.add_argument('--resume', '-r',   action='store_true',                help='resume from checkpoint')
-    parser.add_argument('--noaug',          action='store_false',               help='disable use randomaug')
-    parser.add_argument('--noamp',          action='store_true',                help='disable mixed precision training. for older pytorch versions')
     parser.add_argument('--dp',             action='store_true',                help='use data parallel')
     parser.add_argument('--patch',          default='4', type=int,              help='network patch')
     parser.add_argument('--dimhead',        default='512', type=int,            help='(for ViTs only)')
     parser.add_argument('--convkernel',     default='8', type=int,              help='(for convmixers only)')
-    parser.add_argument('--nosave',         action='store_false',               help='do not save the results')
 
     args = parser.parse_args()
+
+    batchsize = int(args.batchsize)
+    imsize = int(args.size)
 
     use_amp = not args.noamp
     aug = args.noaug
@@ -186,7 +109,7 @@ if __name__ == '__main__':
     if args.net=='vit_timm':
         size = 384
     else:
-        size = 32
+        size = imsize
 
 
     # Model factory..
@@ -325,40 +248,14 @@ if __name__ == '__main__':
     trainloader, testloader, classes = getCIFAR10(datasetdir, size, args.batchsize, aug)
 
 
-    #### Resume
-    if args.resume and os.path.isfile(os.path.join(workdir, 'checkpoint', f'{args.net}-{args.patch}-ckpt.t7')):
-        # Load checkpoint.
-        print('==> Resuming from checkpoint..')
-        checkpoint = torch.load(os.path.join(workdir, 'checkpoint', f'{args.net}-{args.patch}-ckpt.t7'))
-        net.load_state_dict(checkpoint['model'])
-        best_acc = checkpoint['acc']
-        start_epoch = checkpoint['epoch']
+    #### Load Net
+    print('==> Resuming from savefile..')
+    net.load_state_dict(torch.load(os.path.join(savedir, f'fp32_{args.net}.pth')))
 
-    #### Training
+    #### Testing
     # Criterion
     criterion = nn.CrossEntropyLoss()
 
-    # Optimizer
-    if args.opt == 'adam':
-        optimizer = optim.Adam(net.parameters(), lr=args.lr)
-    elif args.opt == 'sgd':
-        optimizer = optim.SGD(net.parameters(), lr=args.lr)  
-    
-    # Scheduler
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, args.n_epochs)
-
-    # Scaler
-    scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
     net.cuda()
 
-    for epoch in range(start_epoch, args.n_epochs):
-        start = time.time()
-        train_loss, val_loss, acc = train(net, epoch, workdir, args.net, args.patch, best_acc)
-        
-        scheduler.step(epoch-1) # step cosine scheduling
-        
-        # print(f'{train_loss}, {val_loss}, {acc}')
-
-    if args.nosave or (acc < best_acc):
-        print(f'saving results net...')
-        torch.save(net.state_dict(), os.path.join(savedir, f'fp32_{args.net}.pth'))
+    test(net, testloader)
