@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 # Define the VGG-11 architecture
-class VGG11CIFAR10(nn.Module):
+class VGG11CIFAR100(nn.Module):
     def __init__(self, dropout_value=0.5):
-        super(VGG11CIFAR10, self).__init__()
+        super(VGG11CIFAR100, self).__init__()
 
         # Feature extraction layers (Convolution + MaxPool)
         self.features = nn.Sequential(
