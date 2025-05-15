@@ -22,8 +22,7 @@ import torchvision.models as models
 
 datasetdir = os.getenv('TORCH_DATASETPATH', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data'))
 print(datasetdir)
-# savedir    = os.getenv('TORCH_TRAINPATH', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data'))
-savedir    = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
+savedir    = os.getenv('TORCH_TRAINPATH', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data'))
 
 #####################################################################################################################
 ## Train Routine

@@ -63,9 +63,9 @@ class ImageNetValDataset(Dataset):
 
 def imageNET(datasetdir, size=256, batchsize=64, augment=False):
 
-    val_img_dir = os.path.join(datasetdir, 'val')
-    label_file = os.path.join(datasetdir, 'LOC_val_solution.csv')
-    synset_file = os.path.join(datasetdir, 'LOC_synset_mapping.txt')
+    val_img_dir = os.path.join(datasetdir, 'ImageNet', 'data', 'val')
+    label_file = os.path.join(datasetdir, 'ImageNet', 'data', 'LOC_val_solution.csv')
+    synset_file = os.path.join(datasetdir, 'ImageNet', 'data', 'LOC_synset_mapping.txt')
 
     transf = transforms.Compose([
         transforms.Resize(size),
