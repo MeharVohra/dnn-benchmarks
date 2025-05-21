@@ -13,6 +13,8 @@ from utils import progress_bar
 from dataset import imageNET
 
 from torchvision.models.alexnet import AlexNet_Weights
+from torchvision.models.resnet import ResNet50_Weights, ResNet18_Weights, ResNet34_Weights, ResNet101_Weights, ResNet152_Weights
+from torchvision.models import resnet50, resnet18, resnet34, resnet101, resnet152
 import torch.utils.model_zoo
 import torchvision.models as models
 
@@ -73,6 +75,7 @@ if __name__ == '__main__':
         'res34',
         'res50',
         'res101',
+        'res152',
         'squeezenet',
         'densenet',
         'resnext50',
@@ -91,7 +94,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch imagenet Training')
 
     parser.add_argument('--net',            choices=networks, required=True,    help='Network to train')
-    parser.add_argument('--batchsize',      default=512)
+    parser.add_argument('--batchsize',      default=64)
     parser.add_argument('--dp',             action='store_true',                help='use data parallel')
     parser.add_argument('--patch',          default='4', type=int,              help='network patch')
     parser.add_argument('--dimhead',        default='512', type=int,            help='(for ViTs only)')
@@ -140,13 +143,25 @@ if __name__ == '__main__':
     elif args.net=='vgg19':
         net = models.vgg19(pretrained=True)
     elif args.net=='res18': # 69.7
-        net = models.resnet18(pretrained=True)
+        weights = ResNet18_Weights.DEFAULT
+        net = resnet18(weights=weights)
+        net.eval()
     elif args.net=='res34': # 73.2
-        net = models.resnet34(pretrained=True)
-    elif args.net=='res50': # 76.1
-        net = models.resnet50(pretrained=True)
-    elif args.net=='res101':# 77.3
-        net = models.resnet101(pretrained=True)
+        weights = ResNet34_Weights.DEFAULT
+        net = resnet34(weights=weights)
+        net.eval()
+    elif args.net=='res50': # 80.3
+        weights = ResNet50_Weights.DEFAULT
+        net = resnet50(weights=weights)
+        net.eval()
+    elif args.net=='res101':# 81.6
+        weights = ResNet101_Weights.DEFAULT
+        net = resnet101(weights=weights)
+        net.eval()
+    elif args.net=='res152': # 82.3
+        weights = ResNet152_Weights.DEFAULT
+        net = resnet152(weights=weights)
+        net.eval()
     # elif args.net=='convmixer':
         # from paper, accuracy >96%. you can tune the depth and dim to scale accuracy and speed.
         # net = models.ConvMixer(256, 16, kernel_size=args.convkernel, patch_size=1, n_classes=10)
