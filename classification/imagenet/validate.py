@@ -11,9 +11,8 @@ import time
 
 from utils import progress_bar
 from dataset import imageNET
-from torchvision.models import mobilenet_v3_large as MobileNetV3
-from torchvision.models import AlexNet
-from torchvision.models import resnet18
+
+from torchvision.models.alexnet import AlexNet_Weights
 import torch.utils.model_zoo
 import torchvision.models as models
 
@@ -97,7 +96,7 @@ if __name__ == '__main__':
     parser.add_argument('--patch',          default='4', type=int,              help='network patch')
     parser.add_argument('--dimhead',        default='512', type=int,            help='(for ViTs only)')
     parser.add_argument('--convkernel',     default='8', type=int,              help='(for convmixers only)')
-    parser.add_argument('--size',           default='32', type=int,             help='Input image size')
+    parser.add_argument('--size',           default='256', type=int,             help='Input image size')
     parser.add_argument('--noaug',          action='store_true',                help='Disable data augmentation')
     args = parser.parse_args()
 
@@ -124,13 +123,15 @@ if __name__ == '__main__':
 
     if args.net=='lenet':
         net = models.LeNet(dropout_value=0.5)
-    elif args.net=='alexnet':
-        net = models.alexnet(pretrained=True)
-    elif args.net == 'googlenet':
+    elif args.net=='alexnet': # 56.5
+        weights = AlexNet_Weights.DEFAULT
+        net = models.alexnet(weights=weights)
+        net.eval()
+    elif args.net == 'googlenet': # 69.7
         net = models.googlenet(pretrained=True)
-    elif args.net=='mobilenetv3':
+    elif args.net=='mobilenetv3': # 74
         net = models.mobilenet_v3_large(pretrained=True)
-    elif args.net=='mobilenetv2':
+    elif args.net=='mobilenetv2': # 71.8
         net = models.mobilenet_v2(pretrained=True)
     elif args.net == 'vgg11':
         net = models.vgg11(pretrained=True)
@@ -138,13 +139,13 @@ if __name__ == '__main__':
         net = models.vgg16(pretrained = True)
     elif args.net=='vgg19':
         net = models.vgg19(pretrained=True)
-    elif args.net=='res18':
+    elif args.net=='res18': # 69.7
         net = models.resnet18(pretrained=True)
-    elif args.net=='res34':
+    elif args.net=='res34': # 73.2
         net = models.resnet34(pretrained=True)
-    elif args.net=='res50':
+    elif args.net=='res50': # 76.1
         net = models.resnet50(pretrained=True)
-    elif args.net=='res101':
+    elif args.net=='res101':# 77.3
         net = models.resnet101(pretrained=True)
     # elif args.net=='convmixer':
         # from paper, accuracy >96%. you can tune the depth and dim to scale accuracy and speed.
@@ -244,13 +245,13 @@ if __name__ == '__main__':
     #         emb_dropout = 0.1,
     #         layer_dropout = 0.05
     #     )
-    elif args.net=='swin':
+    elif args.net=='swin_t': # 81
         net = models.swin_t(pretrained=True)
-    elif args.net == 'squeezenet':
+    elif args.net == 'squeezenet': # 58.1
         net = models.squeezenet1_0(pretrained=True)
-    elif args.net == 'densenet':
+    elif args.net == 'densenet': # 77.1
         net = models.densenet161(pretrained=True)
-    elif args.net == 'resnext50':
+    elif args.net == 'resnext50': # 77.6
         net = models.resnext50_32x4d(pretrained = True)
     else:
         raise ValueError('unsupported net')
@@ -265,7 +266,7 @@ if __name__ == '__main__':
 
 
     #### Dataset
-    testloader = imageNET(datasetdir, size, args.batchsize, aug)
+    testloader = imageNET(datasetdir, size, args.batchsize)
 
 
     #### Load Net

@@ -44,7 +44,7 @@ class ImageNetValDataset(Dataset):
         img_path = os.path.join(self.img_dir, img_name)
 
         # Debugging: Print full path before loading
-        print(f"🔍 Checking file: {img_path}")
+        # print(f"🔍 Checking file: {img_path}")
 
         if not os.path.exists(img_path):
             raise FileNotFoundError(f"❌ Image file not found: {img_path}")
@@ -61,7 +61,8 @@ class ImageNetValDataset(Dataset):
 
         return image, label
 
-def imageNET(datasetdir, size=256, batchsize=64, augment=False):
+
+def imageNET(datasetdir, size=256, batchsize=64):
 
     val_img_dir = os.path.join(datasetdir, 'ImageNet', 'data', 'val')
     label_file = os.path.join(datasetdir, 'ImageNet', 'data', 'LOC_val_solution.csv')
@@ -74,9 +75,8 @@ def imageNET(datasetdir, size=256, batchsize=64, augment=False):
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
-
     # Ensure synset file is passed
-    print(f'-I({__file__}): Loading ImageNet dataset from {val_img_dir}')
+    # print(f'-I({__file__}): Loading ImageNet dataset from {val_img_dir}')
 
     test_dataset = ImageNetValDataset(val_img_dir, label_file, synset_file, transform=transf)
 
