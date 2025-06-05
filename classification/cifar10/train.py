@@ -322,7 +322,7 @@ if __name__ == '__main__':
 
 
     #### Dataset
-    trainloader, testloader, classes = getCIFAR10(datasetdir, size, args.batchsize, aug)
+    trainloader, testloader, classes= getCIFAR10(datasetdir, size, args.batchsize, aug)
 
 
     #### Resume

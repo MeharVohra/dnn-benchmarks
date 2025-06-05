@@ -91,11 +91,13 @@ if __name__ == '__main__':
     parser.add_argument('--patch',          default='4', type=int,              help='network patch')
     parser.add_argument('--dimhead',        default='512', type=int,            help='(for ViTs only)')
     parser.add_argument('--convkernel',     default='8', type=int,              help='(for convmixers only)')
+    parser.add_argument('--noamp',          action='store_true',                help='disable mixed precision training. for older pytorch versions')
+    parser.add_argument('--noaug',          action='store_false',               help='disable use randomaug')
 
     args = parser.parse_args()
 
     batchsize = int(args.batchsize)
-    imsize = int(args.size)
+    #imsize = int(args.size)
 
     use_amp = not args.noamp
     aug = args.noaug
@@ -109,7 +111,7 @@ if __name__ == '__main__':
     if args.net=='vit_timm':
         size = 384
     else:
-        size = imsize
+        size = 32
 
 
     # Model factory..
@@ -118,14 +120,14 @@ if __name__ == '__main__':
     if args.net=='lenet':
         net = models.LeNet(dropout_value=0.5)
     elif args.net=='alexnet':
-        net = models.AlexNet()
+        net = models.AlexNet() # 52
     elif args.net=='vgg11':
         net = models.VGG11CIFAR100(dropout_value=.1)
     elif args.net=='vgg19':
         net = models.VGG('VGG19')
-    elif args.net=='res18':
+    elif args.net=='res18': # 71.6
         net = models.ResNet18()
-    elif args.net=='res34':
+    elif args.net=='res34': # 74.5
         net = models.ResNet34()
     elif args.net=='res50':
         net = models.ResNet50()
@@ -245,12 +247,12 @@ if __name__ == '__main__':
 
 
     #### Dataset
-    trainloader, testloader, classes = getCIFAR100(datasetdir, size, args.batchsize, aug)
+    trainloader, testloader = getCIFAR100(datasetdir, size, args.batchsize, aug)
 
 
     #### Load Net
     print('==> Resuming from savefile..')
-    net.load_state_dict(torch.load(os.path.join(savedir, f'fp32_{args.net}.pth')))
+    net.load_state_dict(torch.load(os.path.join(savedir, f'fp32_{args.net}_cifar100.pth')))
     net.to(device)
 
     #### Testing

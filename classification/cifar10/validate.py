@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-'''
 
-Train CIFAR10 with PyTorch and Vision Transformers!
-written by @kentaroy47, @arutema47
 
-'''
+# Train CIFAR10 with PyTorch and Vision Transformers!
+# written by @kentaroy47, @arutema47
+
+
 
 import torch
 import torch.nn as nn
@@ -20,7 +20,7 @@ from utils import progress_bar
 from dataset import getCIFAR10
 
 #####################################################################################################################
-## System
+# System
 
 datasetdir = os.getenv('TORCH_DATASETPATH', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data'))
 # savedir    = os.getenv('TORCH_TRAINPATH', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data'))
@@ -91,11 +91,13 @@ if __name__ == '__main__':
     parser.add_argument('--patch',          default='4', type=int,              help='network patch')
     parser.add_argument('--dimhead',        default='512', type=int,            help='(for ViTs only)')
     parser.add_argument('--convkernel',     default='8', type=int,              help='(for convmixers only)')
+    parser.add_argument('--noaug',          action='store_false',               help='disable use randomaug')
+    parser.add_argument('--noamp',          action='store_true',                help='disable mixed precision training. for older pytorch versions')
 
     args = parser.parse_args()
 
     batchsize = int(args.batchsize)
-    imsize = int(args.size)
+
 
     use_amp = not args.noamp
     aug = args.noaug
@@ -109,7 +111,7 @@ if __name__ == '__main__':
     if args.net=='vit_timm':
         size = 384
     else:
-        size = imsize
+        size = 32
 
 
     # Model factory..
@@ -117,17 +119,17 @@ if __name__ == '__main__':
 
     if args.net=='lenet':
         net = models.LeNet(dropout_value=0.5)
-    elif args.net=='alexnet':
+    elif args.net=='alexnet': # 81.2
         net = models.AlexNet()
     elif args.net=='vgg11':
         net = models.VGG11CIFAR10(dropout_value=.1)
     elif args.net=='vgg19':
         net = models.VGG('VGG19')
-    elif args.net=='res18':
+    elif args.net=='res18': # 94.5
         net = models.ResNet18()
-    elif args.net=='res34':
+    elif args.net=='res34': # 95.1
         net = models.ResNet34()
-    elif args.net=='res50':
+    elif args.net=='res50': 
         net = models.ResNet50()
     elif args.net=='res101':
         net = models.ResNet101()
