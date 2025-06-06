@@ -160,7 +160,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--net',            choices=networks, required=True,    help='Network to train')
     parser.add_argument('--batchsize',      default=512)
-    parser.add_argument('--n_epochs',       type=int, default='200',            help='training epochs (400 for ViTs, 200 otherwise)')
+    parser.add_argument('--n_epochs',       type=int, default='300',            help='training epochs (400 for ViTs, 200 otherwise)')
     parser.add_argument('--lr',             default=1e-3, type=float,           help='learning rate (recommended: 1e-4 for ViTs, 1e-3 otherwise)') # resnets.. 1e-3, Vit..1e-4
     parser.add_argument('--opt',            default='adam', choices=optimizers)
     parser.add_argument('--resume', '-r',   action='store_true',                help='resume from checkpoint')

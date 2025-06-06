@@ -129,7 +129,7 @@ if __name__ == '__main__':
         net = models.ResNet18()
     elif args.net=='res34': # 95.1
         net = models.ResNet34()
-    elif args.net=='res50': 
+    elif args.net=='res50':
         net = models.ResNet50()
     elif args.net=='res101':
         net = models.ResNet101()

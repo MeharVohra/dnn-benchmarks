@@ -262,6 +262,7 @@ if __name__ == '__main__':
     #     )
     elif args.net=='swin_t': # 81
         net = models.swin_t(pretrained=True)
+        print(net)
     elif args.net == 'squeezenet': # 58.1
         net = models.squeezenet1_0(pretrained=True)
     elif args.net == 'densenet': # 77.1

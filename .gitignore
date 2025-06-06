@@ -21,6 +21,7 @@
 !*CMakeLists.txt
 !nvdla/specs/*.yaml
 !requirements.txt
+ssd300.pth
 
 # Temporary Directories
 *_
