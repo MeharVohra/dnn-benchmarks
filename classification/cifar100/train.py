@@ -20,6 +20,9 @@ import models.simplevit
 from utils import progress_bar
 from dataset import getCIFAR100
 
+
+
+
 #####################################################################################################################
 ## System
 
@@ -148,7 +151,9 @@ if __name__ == '__main__':
         'vit',
         'cait',
         'cait_small',
-        'swin']
+        'swin',
+         'resnext50',
+         'mobilenet_v2']
 
     optimizers = [
         'adam',
@@ -208,6 +213,8 @@ if __name__ == '__main__':
         net = models.ResNet50()
     elif args.net=='res101':
         net = models.ResNet101()
+    elif args.net=='mobilenet_v2':
+        net = models.mobilenet_v2()
     elif args.net=='convmixer':
         # from paper, accuracy >96%. you can tune the depth and dim to scale accuracy and speed.
         net = models.ConvMixer(256, 16, kernel_size=args.convkernel, patch_size=1, n_classes=100)
