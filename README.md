@@ -43,21 +43,27 @@ Using the repository is straightforward - all you need to do is run the `train_c
 
 # Results..
 
-|             | Accuracy | Train Log |
-|:-----------:|:--------:|:--------:|
-| ViT patch=2 |    80%    | |
-| ViT patch=4 Epoch@200 |    80%   | [Log](https://wandb.ai/arutema47/cifar10-challange/reports/Untitled-Report--VmlldzoxNjU3MTU2?accessToken=3y3ib62e8b9ed2m2zb22dze8955fwuhljl5l4po1d5a3u9b7yzek1tz7a0d4i57r) |
-| ViT patch=4 Epoch@500 |    88%   | [Log](https://wandb.ai/arutema47/cifar10-challange/reports/Untitled-Report--VmlldzoxNjU3MTU2?accessToken=3y3ib62e8b9ed2m2zb22dze8955fwuhljl5l4po1d5a3u9b7yzek1tz7a0d4i57r) |
-| ViT patch=8 |    30%   | |
-| ViT small  | 80% | |
-| MLP mixer |    88%   | |
-| CaiT  | 80% | |
-| Swin-t  | 90% | |
-| ViT small (timm transfer) | 97.5% | |
-| ViT base (timm transfer) | 98.5% | |
-| [ConvMixerTiny(no pretrain)](https://openreview.net/forum?id=TVHS5Y4dNvM) | 96.3% |[Log](https://wandb.ai/arutema47/cifar10-challange/reports/convmixer--VmlldzoyMjEyOTk1?accessToken=2w9nox10so11ixf7t0imdhxq1rf1ftgzyax4r9h896iekm2byfifz3b7hkv3klrt)|
-|   resnet18  |  93%  | |
-|   resnet18+randaug  |  95%  | [Log](https://wandb.ai/arutema47/cifar10-challange/reports/Untitled-Report--VmlldzoxNjU3MTYz?accessToken=968duvoqt6xq7ep75ob0yppkzbxd0q03gxy2apytryv04a84xvj8ysdfvdaakij2) |
+| MODELS  | MNIST | CIFAR10 | CIFAR100 | ImageNet | COCO |
+| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+| Lenet  | 97.2  | 82.6  | x  | x  | x  |
+| Alexnet | x  | 81.2  | 42.5  | 56.5  |x  |
+| Res18 | x  | 94.5  | 71.6  | 69.7  | x  |
+| Res34 | x  | 95.1  | 74.5  | 74.5  | x  |
+| Res50 | x  | 95.4  | 74.6  | 80.3  | x  |
+| Res101 | x  | x  | x  | 81.6  | x  |
+| vgg11 | x  | 87.6  | x  | 69  | x  |
+| vgg16 | x  | x  | x  | 71.5  | x  |
+| vgg19 | x  | 93.5  | x  | 72.3  | x  |
+| swin_t | x  | x  | 71.6  | 81  | x  |
+| squeezenet | x  | x  | x  | 58.1  | x  |
+| densenet | x  | x  | x  | 77.1  | x  |
+| resnext50 | x  | x  | x  | 77.6  | x  |
+| googlenet | x  | x  | x  | 69.7  | x  |
+| mobilenetv2 | x  | x  | x  | 71.8  | x  |
+| mobilenetv3 | x  | x  | x  | 74  | x  |
+| yolov3 | x  | x  | x  | x  |   |
+| ssdlite | x  | x  | x  | x  |   |
+
 
 # Used in..
 * Vision Transformer Pruning [arxiv](https://arxiv.org/abs/2104.08500) [github](https://github.com/Cydia2018/ViT-cifar10-pruning)
